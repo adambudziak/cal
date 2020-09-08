@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from contextvars import ContextVar
 
 import peewee
@@ -46,6 +47,7 @@ async def reset_db_state():
     db._state.reset()
 
 
+@contextmanager
 def get_db(db_state=Depends(reset_db_state)):
     try:
         db.connect()

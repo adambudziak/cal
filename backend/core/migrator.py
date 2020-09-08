@@ -1,3 +1,4 @@
+import peewee
 from playhouse.migrate import PostgresqlMigrator
 
 from core.database import db
@@ -17,7 +18,12 @@ def run_migrations():
         migration_name = migration.__name__
 
         if migration_name not in done_migrations:
-            migration.commands(migrator)
+            try:
+                with db.atomic():
+                    migration.commands(migrator)
+            except peewee.ProgrammingError:
+                # TODO(adambudziak) handle this properly
+                pass
             Migrations.create(module=migration_name)
 
 

@@ -23,5 +23,5 @@ class BaseModel(peewee.Model):
 
 @register_model
 class Migrations(BaseModel):
-    created_at = peewee.DateTimeField()
-    module = peewee.CharField(max_length=100, default=datetime.now)
+    created_at = peewee.DateTimeField(default=datetime.now)
+    module = peewee.CharField(max_length=100)

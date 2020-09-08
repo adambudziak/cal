@@ -10,14 +10,20 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-async def initialize_database(_=Depends(get_db)):
-    migrator.run()
+async def initialize_database():
+    with get_db():
+        migrator.run()
 
 
 @app.get("/", response_model=List[IngredientSchema], dependencies=[Depends(get_db)])
 def get_ingredients():
     ingredients = list(Ingredient.select())
     return ingredients
+
+
+@app.get("/hello")
+def return_greeting():
+    return {"msg": "Hello, world!"}
 
 
 if __name__ == "__main__":
