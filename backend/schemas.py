@@ -1,9 +1,9 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, Optional
 
 import peewee
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from pydantic.utils import GetterDict
 
 
@@ -21,6 +21,18 @@ class BasePeeweeSchema(BaseModel):
         getter_dict = GetterDict
 
 
-class IngredientSchema(BasePeeweeSchema):
+class IngredientOutput(BasePeeweeSchema):
+    id: int
     created_at: datetime
     name: str
+    calories: float
+
+
+class IngredientCreate(BasePeeweeSchema):
+    name: str
+    calories: float
+
+
+class IngredientUpdate(BasePeeweeSchema):
+    name: str
+    calories: float

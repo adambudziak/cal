@@ -20,6 +20,11 @@ class BaseModel(peewee.Model):
     class Meta:
         database = db
 
+    def row_update(self, **fields):
+        for name, value in fields.items():
+            setattr(self, name, value)
+        return self
+
 
 @register_model
 class Migrations(BaseModel):

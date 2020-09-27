@@ -5,6 +5,7 @@ import peewee
 
 from fastapi import Depends
 from pydantic import BaseSettings, Field
+from settings import AppSettings
 
 
 class Settings(BaseSettings):
@@ -14,7 +15,8 @@ class Settings(BaseSettings):
     database_host: str = Field(..., env="POSTGRES_HOST")
 
 
-settings = Settings()
+class TestSettings(Settings):
+    database_name = "test_db"
 
 
 db_state_default = {"closed": None, "conn": None, "ctx": None, "transactions": None}
@@ -33,25 +35,36 @@ class PeeweeConnectionState(peewee._ConnectionState):
         return self._state.get()[key]
 
 
-db = peewee.PostgresqlDatabase(
-    settings.database_name,
-    user=settings.database_user,
-    host=settings.database_host,
-    password=settings.database_password,
-)
-db._state = PeeweeConnectionState()
+db = peewee.DatabaseProxy()
+
+
+def init_db(app_settings: AppSettings):
+    settings = TestSettings() if app_settings.test else Settings()
+    _init_db(settings)
+
+
+def _init_db(settings: Settings):
+    db.initialize(
+        peewee.PostgresqlDatabase(
+            settings.database_name,
+            user=settings.database_user,
+            host=settings.database_host,
+            password=settings.database_password,
+        )
+    )
+    db.obj._state = PeeweeConnectionState()
 
 
 async def reset_db_state():
-    db._state._state.set(db_state_default.copy())
-    db._state.reset()
+    db.obj._state._state.set(db_state_default.copy())
+    db.obj._state.reset()
 
 
 @contextmanager
 def get_db(db_state=Depends(reset_db_state)):
     try:
-        db.connect()
+        db.obj.connect()
         yield
     finally:
-        if not db.is_closed():
-            db.close()
+        if not db.obj.is_closed():
+            db.obj.close()
