@@ -3,11 +3,10 @@ from typing import List
 
 from core import migrator
 from core.database import get_db, init_db
-from fastapi import Depends, FastAPI
-
 from core.utils import get_or_404
+from fastapi import Depends, FastAPI
 from models import Ingredient
-from schemas import IngredientOutput, IngredientCreate, IngredientUpdate
+from schemas import IngredientCreate, IngredientOutput, IngredientUpdate
 from settings import AppSettings
 
 app = FastAPI()
