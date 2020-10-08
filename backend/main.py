@@ -7,14 +7,13 @@ from core.utils import get_or_404
 from fastapi import Depends, FastAPI
 from models import Ingredient
 from schemas import IngredientCreate, IngredientOutput, IngredientUpdate
-from settings import AppSettings
 
 app = FastAPI()
-init_db(AppSettings())
 
 
 @app.on_event("startup")
 async def initialize_database():
+    init_db()
     with get_db():
         migrator.run()
 

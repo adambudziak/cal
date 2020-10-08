@@ -1,20 +1,10 @@
-from pytest import fixture
-
-from core import migrator
-from core.database import Settings, get_db
+from core.database import Settings
 from main import app
 from models import Ingredient
 from starlette import status
 from starlette.testclient import TestClient
 
 settings = Settings()
-
-
-@fixture(scope="session", autouse=True)
-def initialize_database():
-    with get_db():
-        migrator.run()
-
 
 client = TestClient(app)
 
@@ -28,3 +18,16 @@ def test_create_ingredient():
     assert response.status_code == status.HTTP_200_OK, response.content
     ingredient = Ingredient.get()
     assert all((ingredient.calories == 153, ingredient.name == "Chicken breasts"))
+
+
+def test_no_ingredients():
+    response = client.get("/ingredients")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []
+
+
+def test_get_ingredient(ingredient):
+    ingredient.save()
+    response = client.get("/ingredients")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == []

@@ -1,7 +1,7 @@
 import peewee
 from playhouse.migrate import PostgresqlMigrator
 
-from core import logger
+import logger
 from core.database import db
 from core.models import Migrations, registered_models
 from migrations import migrations_iterator
@@ -15,6 +15,11 @@ def init_tables():
     db.create_tables(list(registered_models()))
 
 
+def reset_tables():
+    db.drop_tables(list(registered_models()))
+    init_tables()
+
+
 def run_migrations():
     done_migrations = set(m.module for m in Migrations.select(Migrations.module))
     for migration in migrations_iterator():
@@ -25,7 +30,7 @@ def run_migrations():
                 with db.atomic():
                     migration.commands(migrator)
             except peewee.ProgrammingError as e:
-                logger.warn(f"Migration {migration_name} failed. Exception: {e}")
+                logger.warning(f"Migration {migration_name} failed. Exception: {e}")
             Migrations.create(module=migration_name)
         else:
             logger.info(f"Skipping migration {migration_name}")
