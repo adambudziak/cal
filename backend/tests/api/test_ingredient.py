@@ -30,4 +30,11 @@ def test_get_ingredient(ingredient):
     ingredient.save()
     response = client.get("/ingredients")
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == []
+    assert response.json() == [
+        {
+            "calories": ingredient.calories,
+            "created_at": ingredient.created_at.isoformat(),
+            "name": ingredient.name,
+            "id": ingredient.id,
+        }
+    ]

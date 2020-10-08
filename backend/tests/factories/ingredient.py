@@ -1,6 +1,5 @@
 import factory
-from factory.fuzzy import FuzzyFloat
-
+from factory.fuzzy import FuzzyInteger
 from models import Ingredient
 
 
@@ -9,4 +8,4 @@ class IngredientFactory(factory.Factory):
         model = Ingredient
 
     name = factory.Faker("name")
-    calories = FuzzyFloat(1, 100)
+    calories = FuzzyInteger(1, 100)
