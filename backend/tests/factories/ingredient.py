@@ -1,9 +1,11 @@
+from tests.factories.base import PeeweeModelFactory
+
 import factory
 from factory.fuzzy import FuzzyInteger
 from models import Ingredient
 
 
-class IngredientFactory(factory.Factory):
+class IngredientFactory(PeeweeModelFactory):
     class Meta:
         model = Ingredient
 

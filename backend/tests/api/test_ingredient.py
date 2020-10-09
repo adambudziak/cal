@@ -27,7 +27,6 @@ def test_no_ingredients():
 
 
 def test_get_ingredient(ingredient):
-    ingredient.save()
     response = client.get("/ingredients")
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [
