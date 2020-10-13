@@ -1,11 +1,11 @@
 from pytest import fixture
 
-from core import database
-from core import migrator
+from core import database, migrator
 from core.database import get_db
+from main import app
+from starlette.testclient import TestClient
 
-from pytest_factoryboy import register
-from tests.factories.ingredient import IngredientFactory
+from .factories.conftest import *  # noqa
 
 TEST_DB_NAME = "test_db"
 
@@ -24,4 +24,9 @@ def reset_database():
         migrator.reset_tables()
 
 
-register(IngredientFactory)
+client = TestClient(app)
+
+
+@fixture
+def app_client():
+    return client

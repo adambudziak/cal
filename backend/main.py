@@ -1,12 +1,7 @@
-from datetime import datetime
-from typing import List
-
+import meals.router
 from core import migrator
 from core.database import get_db, init_db
-from core.utils import get_or_404
-from fastapi import Depends, FastAPI
-from models import Ingredient
-from schemas import IngredientCreate, IngredientOutput, IngredientUpdate
+from fastapi import FastAPI
 
 app = FastAPI()
 
@@ -18,35 +13,4 @@ async def initialize_database():
         migrator.run()
 
 
-@app.get(
-    "/ingredients",
-    response_model=List[IngredientOutput],
-    dependencies=[Depends(get_db)],
-)
-def get_ingredients():
-    return list(Ingredient.select())
-
-
-@app.post(
-    "/ingredients", response_model=IngredientOutput, dependencies=[Depends(get_db)]
-)
-def create_ingredient(ingredient: IngredientCreate):
-    return Ingredient.create(**ingredient.dict(), created_at=datetime.now())
-
-
-@app.get(
-    "/ingredients/{ingredient_id}", response_model=IngredientOutput,
-)
-def get_ingredient(ingredient_id: int, db=Depends(get_db)):
-    return get_or_404(Ingredient, Ingredient.id == ingredient_id)
-
-
-@app.post(
-    "/ingredients/{ingredient_id}",
-    response_model=IngredientOutput,
-    dependencies=[Depends(get_db)],
-)
-def update_ingredient(ingredient_id: int, ingredient: IngredientUpdate):
-    db_ingredient = get_or_404(Ingredient, Ingredient.id == ingredient_id)
-    db_ingredient.row_update(**ingredient.dict()).save()
-    return db_ingredient
+app.include_router(meals.router.router, prefix="/meals", tags=["Meal"])

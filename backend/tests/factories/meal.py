@@ -2,7 +2,7 @@ from tests.factories.base import PeeweeModelFactory
 
 import factory
 from factory.fuzzy import FuzzyInteger
-from models import Ingredient
+from meals.models import Ingredient, Meal
 
 
 class IngredientFactory(PeeweeModelFactory):
@@ -11,3 +11,11 @@ class IngredientFactory(PeeweeModelFactory):
 
     name = factory.Faker("name")
     calories = FuzzyInteger(1, 100)
+
+
+class MealFactory(PeeweeModelFactory):
+    class Meta:
+        model = Meal
+
+    name = factory.Faker("name")
+    ingredient = factory.SubFactory(IngredientFactory)

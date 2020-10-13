@@ -25,6 +25,10 @@ class BaseModel(peewee.Model):
             setattr(self, name, value)
         return self
 
+    def save(self, force_insert=False, only=None):
+        super().save(force_insert=force_insert, only=only)
+        return self
+
 
 @register_model
 class Migrations(BaseModel):
