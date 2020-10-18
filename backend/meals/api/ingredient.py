@@ -1,13 +1,12 @@
 from datetime import datetime
 from typing import List
 
-from fastapi import Depends, APIRouter, Response
-from starlette import status
-
 from core.database import get_db
 from core.schemas import BaseSchema
 from core.utils import get_or_404
+from fastapi import APIRouter, Depends, Query, Response
 from meals.models import Ingredient
+from starlette import status
 
 router = APIRouter()
 
@@ -22,8 +21,12 @@ class IngredientResponse(BaseSchema):
 @router.get(
     "/", response_model=List[IngredientResponse], dependencies=[Depends(get_db)],
 )
-def get_ingredients():
-    return list(Ingredient.select())
+def get_ingredients(search: str = Query(None)):
+    query = Ingredient.select()
+    if search:
+        query = query.where(Ingredient.search_name.match(search))
+
+    return list(query)
 
 
 class IngredientCreate(BaseSchema):

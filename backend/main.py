@@ -1,7 +1,8 @@
 import meals.router
 from core import migrator
 from core.database import get_db, init_db
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
+from fastapi.responses import Response
 
 app = FastAPI()
 
@@ -13,4 +14,13 @@ async def initialize_database():
         migrator.run()
 
 
-app.include_router(meals.router.router, prefix="/meals", tags=["Meal"])
+def inject_cors(response: Response):
+    response.headers["Access-Control-Allow-Origin"] = "http://localhost:19006"
+
+
+app.include_router(
+    meals.router.router,
+    prefix="/meals",
+    tags=["Meal"],
+    dependencies=[Depends(inject_cors)],
+)

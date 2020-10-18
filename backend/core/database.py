@@ -27,6 +27,10 @@ class PeeweeConnectionState(peewee._ConnectionState):
         super().__setattr__("_state", db_state)
         super().__init__(**kwargs)
 
+    def reset(self):
+        self._state.set(db_state_default.copy())
+        super().reset()
+
     def __setattr__(self, key, value):
         self._state.get()[key] = value
 
@@ -53,7 +57,6 @@ def init_db(settings: Settings = None):
 
 
 async def reset_db_state():
-    db.obj._state._state.set(db_state_default.copy())
     db.obj._state.reset()
 
 

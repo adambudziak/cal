@@ -16,8 +16,9 @@ def init_tables():
 
 
 def reset_tables():
-    db.drop_tables(list(registered_models()))
-    init_tables()
+    with db.atomic():
+        db.drop_tables(list(registered_models()))
+        init_tables()
 
 
 def run_migrations():
