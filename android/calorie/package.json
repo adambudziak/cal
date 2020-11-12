@@ -14,7 +14,7 @@
     "@react-navigation/stack": "^5.9.3",
     "@types/styled-components": "^5.1.4",
     "camelcase-keys": "^6.2.2",
-    "expo": "~39.0.2",
+    "expo": "^39.0.4",
     "expo-status-bar": "~1.0.2",
     "react": "16.13.1",
     "react-dom": "16.13.1",

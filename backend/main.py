@@ -1,4 +1,5 @@
 import meals.router
+import users.api.router
 from core import migrator
 from core.database import get_db, init_db
 from fastapi import Depends, FastAPI
@@ -22,5 +23,12 @@ app.include_router(
     meals.router.router,
     prefix="/meals",
     tags=["Meal"],
+    dependencies=[Depends(inject_cors)],
+)
+
+app.include_router(
+    users.api.router.router,
+    prefix="/users",
+    tags=["User"],
     dependencies=[Depends(inject_cors)],
 )
