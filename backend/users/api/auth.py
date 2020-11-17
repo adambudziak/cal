@@ -1,12 +1,13 @@
 from datetime import datetime
 
+from email_validator import validate_email
 from fastapi import APIRouter, HTTPException
 from fastapi import Response
+from pydantic import validator
 from starlette import status
 from passlib.hash import bcrypt
 
 from core.schemas import BaseSchema
-from core.utils import get_or_404
 from users.models import User
 
 router = APIRouter()
@@ -22,6 +23,17 @@ class UserRegistrationData(BaseSchema):
     password: str
     first_name: str
     last_name: str
+
+    @validator('email')
+    def validate_email_format(cls, value: str):
+        validate_email(value, check_deliverability=False)  # TODO(adambudziak) check should be disabled only for tests.
+        return value
+
+    @validator('nickname')
+    def validate_nickname_format(cls, value: str):
+        if '@' in value:
+            raise ValueError('at_sign')
+        return value
 
     def to_orm(self):
         data = self.dict()
@@ -44,9 +56,15 @@ class UserResponse(BaseSchema):
 
 
 @router.post("/register/", response_model=UserResponse)
-def register(data: UserRegistrationData, response: Response):
+def register(user_form: UserRegistrationData, response: Response):
+    if User.filter(email=user_form.email).exists():
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='email_conflict')
+
+    if User.filter(nickname=user_form.nickname):
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail='nickname_conflict')
+
     response.status_code = status.HTTP_201_CREATED
-    return data.to_orm().save()
+    return user_form.to_orm().save()
 
 
 def get_user_by_login(login: str):
@@ -56,10 +74,8 @@ def get_user_by_login(login: str):
 @router.post("/login/", response_model=UserResponse)
 def login(data: UserLoginData):
     user = get_user_by_login(data.login)
-    auth_exc = HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="invalid")
+    auth_exc = HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="not_found")
     if not user:
-        # Note: we return 400 instead of 404 to prevent an adversary from obtaining info
-        #       about which logins are in use.
         raise auth_exc
 
     if not bcrypt.verify(data.password, user.password):

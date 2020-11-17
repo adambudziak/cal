@@ -24,6 +24,7 @@ def test_get_meals_ingredient(app_client, meal):
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == [
         {
+            "sub_meals": [],
             "name": meal.name,
             "created_at": meal.created_at.isoformat(),
             "id": meal.id,

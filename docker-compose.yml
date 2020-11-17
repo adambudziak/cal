@@ -13,7 +13,7 @@ services:
       - .env
     links:
       - db
-    command: ["python", "-m", "run_server"]
+    command: ["python", "-m", "run"]
 
   db:
     image: postgres:13

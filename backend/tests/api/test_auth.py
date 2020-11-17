@@ -14,7 +14,7 @@ def test_register(app_client):
             "last_name": "Last",
         },
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code == status.HTTP_201_CREATED, response.content
     response_data = response.json()
     created_user_id = response_data["id"]
     created_user: User = User.get_or_none(id=created_user_id)
@@ -35,7 +35,7 @@ def test_unregistered_user_cannot_login(app_client):
         "/users/auth/login/",
         json={"login": "nonexistent@mail.com", "password": "Password123!"},
     )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 def test_invalid_email(app_client):
@@ -49,4 +49,49 @@ def test_invalid_email(app_client):
             "last_name": "Last",
         },
     )
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+
+
+def test_email_must_be_unique(app_client, user: User):
+    response = app_client.post(
+        "/users/auth/register/",
+        json={
+            "email": user.email,
+            "nickname": "test",
+            "password": "Password123!",
+            "first_name": "First",
+            "last_name": "Last",
+        }
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': 'email_conflict'}
+
+
+def test_nickname_must_be_unique(app_client, user: User):
+    response = app_client.post(
+        "/users/auth/register/",
+        json={
+            "email": "abc@def.com",
+            "nickname": user.nickname,
+            "password": "Password123!",
+            "first_name": "First",
+            "last_name": "Last",
+        }
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert response.json() == {'detail': 'nickname_conflict'}
+
+
+def test_nickname_must_contain_only_legal_characters(app_client):
+    response = app_client.post(
+        "/users/auth/register/",
+        json={
+            "email": "abc@def.com",
+            "nickname": 'nickname@',
+            "password": "Password123!",
+            "first_name": "First",
+            "last_name": "Last",
+        }
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert not User.filter(nickname='nickname@')
